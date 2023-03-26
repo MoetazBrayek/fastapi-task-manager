@@ -10,10 +10,24 @@ from dotenv import load_dotenv
 import os
 from typing import Union
 from passlib.context import CryptContext
+from fastapi.middleware.cors import CORSMiddleware
 
 load_dotenv()
 
 app = FastAPI()
+
+origins = [
+    "http://localhost:5173",
+    "http://localhost:8080",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 JWT_ALGORITHM = "HS256"
@@ -85,7 +99,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token has expired")
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
-    return token_data
+    return username
 
 def get_current_admin_user(user: User = Depends(get_current_user)):
     if user.is_admin:
@@ -121,7 +135,7 @@ def login_for_access_token(form_data: User):
     if not verify_password(user_data["password"], user["password"]):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid username or password")
     access_token_expires = timedelta(minutes=JWT_EXPIRATION_TIME_MINUTES)
-    access_token = create_access_token(data={"sub": user["username"]}, expires_delta=access_token_expires)
+    access_token = create_access_token(data={"username": user["username"] }, expires_delta=access_token_expires)
     return {"access_token": access_token, "token_type": "bearer"}
 
 @app.post("/tasks")
