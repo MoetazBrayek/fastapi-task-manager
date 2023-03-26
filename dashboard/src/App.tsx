@@ -7,24 +7,23 @@ import NewsPage from './pages/news';
 import RankingPage from './pages/rank';
 import RoadmapPage from './pages/raodmap';
 import WikiPage from './pages/wiki';
+import Layout from './pages/layout';
 function App() {
 
   return (
     <>
           <BrowserRouter>
-      <Routes>
-        <Route path="/" Component={LoginBox} />
-        <Route path="/home" Component={Home} />
-        <Route path="/tasks" Component={TasksPage} />
-        <Route path="/news" Component={NewsPage} />
-        <Route path="/ranking" Component={RankingPage} />
-        <Route path="/roadmap" Component={RoadmapPage} />
-        <Route path="/wiki" Component={WikiPage} />
-      </Routes>
-    </BrowserRouter>
-
-
-
+            <Routes>
+              <Route path="/" Component={LoginBox} />
+              
+              <Route path="/home" Component={Home} />
+              <Route path="/tasks" Component={TasksPage} />
+              <Route path="/news" Component={NewsPage} />
+              <Route path="/ranking" Component={RankingPage} />
+              <Route path="/roadmap" Component={RoadmapPage} />
+              <Route path="/wiki" Component={WikiPage} />
+            </Routes>
+          </BrowserRouter>
     </>
   )
 }
