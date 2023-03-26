@@ -16,19 +16,13 @@ load_dotenv()
 
 app = FastAPI()
 
-origins = [
-    "http://localhost:5173",
-    "http://localhost:8080",
-]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRATION_TIME_MINUTES = 30
@@ -129,11 +123,11 @@ def login_for_access_token(form_data: User):
 
     user = user_collection.find_one({"username": user_data["username"]})
     if user is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid username or password")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid username or password")
     #verify password
     print(user["password"] , user_data["password"])
     if not verify_password(user_data["password"], user["password"]):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid username or password")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid username or password")
     access_token_expires = timedelta(minutes=JWT_EXPIRATION_TIME_MINUTES)
     access_token = create_access_token(data={"username": user["username"] }, expires_delta=access_token_expires)
     return {"access_token": access_token, "token_type": "bearer"}

@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { login } from "../api/api";
+import Swal from "sweetalert2";
+
 function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -7,9 +9,30 @@ function LoginForm() {
   // handle form submit event and call login api
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
     const response = await login(email, password);
-    console.log(response);
-    };
+    // if login is successful, redirect to dashboard and store token in local storage
+    console.dir(response);
+    if (response.status === 200) {
+        localStorage.setItem("token", response.data.access_token);
+        // show success message
+        Swal.fire({
+            title: "Success!",
+            text: "You have successfully logged in.",
+            icon: "success",
+            confirmButtonText: "Ok",
+        });
+        window.location.href = "/dashboard";
+
+    }else{
+        Swal.fire({
+            title: "Error!",
+            text: "Invalid credentials",
+            icon: "error",
+            confirmButtonText: "Ok",
+        });
+    }
+    }
 
 
   return (
