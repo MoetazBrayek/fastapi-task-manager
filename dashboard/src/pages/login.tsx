@@ -9,10 +9,8 @@ function LoginForm() {
   // handle form submit event and call login api
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
+    //TO:DO type response
     const response = await login(email, password);
-    // if login is successful, redirect to dashboard and store token in local storage
-    console.dir(response);
     if (response.status === 200) {
         localStorage.setItem("token", response.data.access_token);
         // show success message
