@@ -93,9 +93,11 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token has expired")
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
-    return username
+    print(payload)
+    return payload
 
 def get_current_admin_user(user: User = Depends(get_current_user)):
+    print(user)
     if user.is_admin:
         return user
     else:
@@ -129,20 +131,19 @@ def login_for_access_token(form_data: User):
     if not verify_password(user_data["password"], user["password"]):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid username or password")
     access_token_expires = timedelta(minutes=JWT_EXPIRATION_TIME_MINUTES)
-    access_token = create_access_token(data={"username": user["username"] }, expires_delta=access_token_expires)
+    access_token = create_access_token(data={"username": user["username"], "is_admin": user["is_admin"] }, expires_delta=access_token_expires)
     return {"access_token": access_token, "token_type": "bearer"}
 
 @app.post("/tasks")
-def create_task(task: Task, user: User = Depends(get_current_user)):
+def create_task(task: Task):
     task_data = task.dict()
-    task_data["user_id"] = user.id
     task_id = task_collection.insert_one(task_data).inserted_id
-    return {"message": "Task created successfully"}
+    return {"message": "Task created successfully", "task_id": str(task_id)}
 
 @app.get("/tasks")
-def get_tasks(user: User = Depends(get_current_user)):
+def get_tasks():
     tasks = []
-    for task in task_collection.find({"user_id": user.id}):
+    for task in task_collection.find({}).sort("start_date", -1):
         tasks.append(Task(**task))
     return tasks
 
@@ -189,12 +190,17 @@ def create_user(user: User, admin_user: User = Depends(get_current_admin_user)):
 
 # make the app before run connect to the database
 # list all the users
-@app.get("/users")
+@app.get("/users", response_model=List[User], dependencies=[Depends(get_current_admin_user)])
 def list_users():
     users = []
-    for user in user_collection.find():
+    for user in user_collection.find({}):
         users.append(User(**user))
+    #remove the password from the response before returning
+    #until i find a better way to do this PyMongo 3.7 and later versions
+    for user in users:
+        user.password = ""
     return users
+
 
 #health endpoint
 @app.get("/health")
