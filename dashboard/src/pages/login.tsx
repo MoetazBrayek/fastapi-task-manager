@@ -20,7 +20,7 @@ function LoginForm() {
             icon: "success",
             confirmButtonText: "Ok",
         });
-        window.location.href = "/dashboard";
+        window.location.href = "/home";
 
     }else{
         Swal.fire({

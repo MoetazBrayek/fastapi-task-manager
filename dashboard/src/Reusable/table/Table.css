@@ -1,0 +1,17 @@
+@keyframes reel {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+  
+  .cat {
+    animation: reel 5s linear infinite;
+  }
+  
+  .duck {
+    animation: reel 7s linear infinite;
+  }
+  
