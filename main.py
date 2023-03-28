@@ -14,6 +14,14 @@ from fastapi.middleware.cors import CORSMiddleware
 
 load_dotenv()
 
+mongo_client = MongoClient(os.getenv("MONGO_URI"))
+db = mongo_client["task_manager"]
+user_collection = db["users"]
+task_collection = db["tasks"]
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
 app = FastAPI()
 
 app.add_middleware(
@@ -28,9 +36,11 @@ JWT_ALGORITHM = "HS256"
 JWT_EXPIRATION_TIME_MINUTES = 30
 
 class User(BaseModel):
-    username: str
+    # make it unique
+    username  : str 
     password: str
     is_admin: bool = False
+
 
 
 class Task(BaseModel):
@@ -50,13 +60,6 @@ class Token(BaseModel):
     access_token: str
     token_type: str
 
-mongo_client = MongoClient(os.getenv("MONGO_URI"))
-db = mongo_client["task_manager"]
-user_collection = db["users"]
-task_collection = db["tasks"]
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
@@ -85,20 +88,14 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
 async def get_current_user(token: str = Depends(oauth2_scheme)):
     try:
         payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
-        username = payload.get("sub")
-        if username is None:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid authentication credentials")
-        token_data = Token(access_token=token, token_type="bearer")
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token has expired")
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
-    print(payload)
     return payload
 
 def get_current_admin_user(user: User = Depends(get_current_user)):
-    print(user)
-    if user.is_admin:
+    if user["is_admin"]:
         return user
     else:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Insufficient privileges")
@@ -190,15 +187,14 @@ def create_user(user: User, admin_user: User = Depends(get_current_admin_user)):
 
 # make the app before run connect to the database
 # list all the users
-@app.get("/users", response_model=List[User], dependencies=[Depends(get_current_admin_user)])
+@app.get("/users", dependencies=[Depends(get_current_admin_user)])
 def list_users():
     users = []
     for user in user_collection.find({}):
-        users.append(User(**user))
+        #append only the username and id
+        users.append({"username": user["username"], "id": str(user["_id"])})
     #remove the password from the response before returning
     #until i find a better way to do this PyMongo 3.7 and later versions
-    for user in users:
-        user.password = ""
     return users
 
 
