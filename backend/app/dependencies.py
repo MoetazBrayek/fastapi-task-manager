@@ -1,4 +1,5 @@
 from fastapi import Header, HTTPException
+from fastapi import Depends
 from bson.objectid import ObjectId
 from pymongo.collection import Collection
 from models.user import User

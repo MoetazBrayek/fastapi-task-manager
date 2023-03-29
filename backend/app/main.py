@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
-from dependencies import get_current_active_user, get_current_active_admin, get_user_by_id
+from .dependencies import get_current_active_user, get_current_active_admin, get_user_by_id
 from models.user import User
 from routers import api_router
 

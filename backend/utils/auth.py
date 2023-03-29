@@ -6,7 +6,7 @@ import jwt
 from pymongo.collection import Collection
 from bson.objectid import ObjectId
 from models.user import User, UserOut
-from utils.security import JWT_SECRET_KEY, JWT_ALGORITHM, JWT_EXPIRATION_TIME_MINUTES, get_password_hash, verify_password
+from utils.security import JWT_SECRET_KEY, JWT_ALGORITHM, JWT_EXPIRATION_TIME_MINUTES, get_password_hash, verify_password, get_user_collection
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")

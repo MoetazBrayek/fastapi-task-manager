@@ -37,3 +37,12 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
     return encoded_jwt
+from pymongo import MongoClient
+import os
+
+mongo_client = MongoClient(os.getenv("MONGO_URI"))
+db = mongo_client["task_manager"]
+user_collection = db["users"]
+
+def get_user_collection():
+    return user_collection
